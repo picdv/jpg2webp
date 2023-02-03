@@ -1,0 +1,79 @@
+name: Tinypng Compress
+
+on:
+  workflow_dispatch:
+
+jobs:
+  tinypng:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Installation depends
+      run: |
+        sudo apt-get update -y
+        sudo apt-get upgrade -y
+        sudo apt-get install curl wget tar -y
+    - name: Download Files
+      run: |
+        cd /tmp
+        sudo wget https://goind1.gzhdev.workers.dev/1:/raws.tar.gz
+        sudo tar -zxvf raws.tar.gz
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tinify
+    - name: start compression
+      run: |
+        cd /home/runner/work/jpg2webp/jpg2webp
+        mkdir /home/runner/work/jpg2webp/jpg2webp/webps
+        python tiny.py ${{ secrets.TINYPNG_KEY}} /tmp/content/raws /home/runner/work/jpg2webp/jpg2webp/webps
+    # - name: Clear Rawfile
+    #   run: |
+    #     cd /home/runner/work/jpg2webp/jpg2webp
+    #     rm -f imgs/ani/*
+    - name: Push to Repo
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Tinypng compress
+    - name: start compression
+      run: |
+        cd /home/runner/work/jpg2webp/jpg2webp
+        tar -zcvf webps.tar.gz webps
+    - name: Upload firmware to WeTransfer
+      id: wetransfer
+      run: |
+        curl -fsSL git.io/file-transfer | sh
+        cd /home/runner/work/jpg2webp/jpg2webp
+        ./transfer wet -s -p 16 --no-progress webps.tar.gz 2>&1 | tee wetransfer.log
+        echo "::warning file=wetransfer.com::$(cat wetransfer.log | grep https)"
+        echo "::set-output name=url::$(cat wetransfer.log | grep https | cut -f3 -d" ")"
+    - name: Generate release tag
+      id: tag
+#       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      run: |
+        echo "::set-output name=release_tag::$(date +"%Y.%m.%d-%H%M")"
+        touch release.txt
+        [ $UPLOAD_COWTRANSFER = true ] && echo "🔗 [Cowtransfer](${{ steps.cowtransfer.outputs.url }})" >> release.txt
+        [ $UPLOAD_WETRANSFER = true ] && echo "🔗 [WeTransfer](${{ steps.wetransfer.outputs.url }})" >> release.txt
+        echo "::set-output name=status::success"
+    - name: Upload firmware to release
+      uses: softprops/action-gh-release@v1
+#       if: steps.tag.outputs.status == 'success' && !cancelled()
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.tag.outputs.release_tag }}
+        body_path: release.txt
+        files: /home/runner/work/jpg2webp/jpg2webp/webps.tar.gz
+    - name: Remove old Releases
+      uses: dev-drprasad/delete-older-releases@v0.1.0
+#       if: env.UPLOAD_RELEASE == 'true' && !cancelled()
+      with:
+        keep_latest: 3
+        delete_tags: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
