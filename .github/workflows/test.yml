@@ -16,4 +16,4 @@ jobs:
     - name: Run a single-line script
       run: |
         cd /home/runner/work/jpg2webp/jpg2webp
-        python test1.py ${{ secrets.TINYPNG_KEY}}
+        python test1.py
