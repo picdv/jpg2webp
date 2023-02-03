@@ -1,4 +1,6 @@
 name: Test
+on:
+  workflow_dispatch:
 jobs:
   echo_text:
     name: echo_text
