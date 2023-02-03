@@ -1,5 +1,6 @@
 name: Test
 on:
+  push:
   workflow_dispatch:
 jobs:
   echo_text:
@@ -13,4 +14,6 @@ jobs:
     - name: checkout
       uses: actions/checkout@master
     - name: Run a single-line script
-      run: python test1.py ${{ secrets.TINYPNG_KEY}}
+      run: |
+        cd /home/runner/work/jpg2webp/jpg2webp
+        python test1.py ${{ secrets.TINYPNG_KEY}}
