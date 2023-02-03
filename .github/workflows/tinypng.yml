@@ -30,7 +30,7 @@ jobs:
       run: |
         cd /home/runner/work/jpg2webp/jpg2webp
         mkdir /home/runner/work/jpg2webp/jpg2webp/webps
-        python tiny.py ${{ secrets.TINYPNG_KEY}} /tmp/content/raws /home/runner/work/jpg2webp/jpg2webp/webps
+        python tiny.py ${{ secrets.TINYPNG_KEY}}
     # - name: Clear Rawfile
     #   run: |
     #     cd /home/runner/work/jpg2webp/jpg2webp
