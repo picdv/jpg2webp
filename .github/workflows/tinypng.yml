@@ -15,9 +15,11 @@ jobs:
         sudo apt-get install curl wget tar -y
     - name: Download Files
       run: |
-        cd /tmp
-        sudo wget https://goind1.gzhdev.workers.dev/1:/raws.tar.gz
-        sudo tar -zxvf raws.tar.gz
+        wget https://goind1.gzhdev.workers.dev/1:/raws.tar.gz
+    - name: unzip
+      run: |
+        ls -l
+        tar -zxvf raws.tar.gz
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -31,10 +33,10 @@ jobs:
         cd /home/runner/work/jpg2webp/jpg2webp
         mkdir /home/runner/work/jpg2webp/jpg2webp/webps
         python tiny.py ${{ secrets.TINYPNG_KEY}}
-    # - name: Clear Rawfile
-    #   run: |
-    #     cd /home/runner/work/jpg2webp/jpg2webp
-    #     rm -f imgs/ani/*
+    - name: Clear Rawfile
+      run: |
+        cd /home/runner/work/jpg2webp/jpg2webp
+        rm -f content raws.tar.gz
     - name: Push to Repo
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
